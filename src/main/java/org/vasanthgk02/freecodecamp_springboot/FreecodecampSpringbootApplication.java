@@ -10,6 +10,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.vasanthgk02.freecodecamp_springboot.run.Location;
 import org.vasanthgk02.freecodecamp_springboot.run.Run;
+import org.vasanthgk02.freecodecamp_springboot.run.RunRepository;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -25,12 +26,5 @@ public class FreecodecampSpringbootApplication {
 
     }
 
-    @Bean
-    CommandLineRunner runner (){
-        return args -> {
-            Run run = new Run(1, "Vasanth", LocalDateTime.now(), LocalDateTime.now().plus(1, ChronoUnit.HOURS),10, Location.OUTDOOR);
-            log.info(run.toString());
-        };
-    }
 
 }

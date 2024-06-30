@@ -7,41 +7,65 @@ import java.util.Objects;
 import java.util.Optional;
 
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.Assert;
 
 @Repository
 public class RunRepository {
-    List<Run> runs = new ArrayList<>();
+    Logger logger = LoggerFactory.getLogger(RunRepository.class);
+    private final JdbcClient jdbclient;
+
+    RunRepository(JdbcClient jdbclient) {
+        this.jdbclient = jdbclient;
+    }
 
     List<Run> findAll() {
-        return this.runs;
+        return jdbclient.sql("SELECT * FROM Run")
+                .query(Run.class)
+                .list();
     }
 
     Optional<Run> findById(Integer id) {
-        return runs.stream().filter(run -> run.id() == id).findFirst();
+        return jdbclient.sql("SELECT * FROM run WHERE run.id = :id")
+                .param("id", id)
+                .query(Run.class)
+                .optional();
     }
 
-    void create(Run run) {
-        runs.add(run);
+    public void create(Run run) {
+        jdbclient.sql("INSERT INTO  Run (id, title, started_on, ended_on, miles, location) VALUES (?,?,?,?,?,?)")
+                .params(List.of(run.id(), run.title(), run.startedOn(), run.endedOn(), run.miles(), run.location().toString()))
+                .update();
     }
 
-    boolean update(Run run) {
-        Optional<Run> isPresent= findById(run.id());
-        if (isPresent.isPresent()) {
-            runs.set(runs.indexOf(isPresent.get()), run);
-            return true;
-        }
-        return false;
+    void update(Run run) {
+        jdbclient.sql("UPDATE Run SET title = ?, started_on = ?, ended_on = ?, miles = ?, location = ? WHERE id = ?")
+                .params(List.of(run.title(), run.startedOn(), run.endedOn(), run.miles(), run.location().toString(), run.id()))
+                .update();
     }
 
     void delete(Integer id) {
-        runs.removeIf(run -> run.id() == id);
+        int deleteStats = jdbclient.sql("DELETE FROM run WHERE id = ?")
+                .params(List.of(id)).update();
+        Assert.state(deleteStats == 1, "Failed to delete record: " + id);
     }
 
-
-    @PostConstruct
-    private void init() {
-        runs.add(new Run(1, "Vasanth", LocalDateTime.now(), LocalDateTime.now().plus(2, ChronoUnit.HOURS),10, Location.OUTDOOR));
-        runs.add(new Run(2, "Suhan", LocalDateTime.now(), LocalDateTime.now().plus(2, ChronoUnit.HOURS),10, Location.OUTDOOR));
+    int count() {
+        return jdbclient.sql("SELECT * from Run").query().listOfRows().size();
     }
+
+    void saveAll(List<Run> runs) {
+        runs.stream().forEach(this::create);
+    }
+
+    List<Run> findByLocation(String location) {
+        return jdbclient.sql("SELECT * FROM run WHERE location = :location")
+                .param("location", location)
+                .query(Run.class)
+                .list();
+    }
+
 }
