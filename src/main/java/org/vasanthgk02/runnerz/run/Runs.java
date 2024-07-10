@@ -1,4 +1,4 @@
-package org.vasanthgk02.freecodecamp_springboot.run;
+package org.vasanthgk02.runnerz.run;
 
 import java.util.List;
 

@@ -1,10 +1,11 @@
-package org.vasanthgk02.freecodecamp_springboot.run;
+package org.vasanthgk02.runnerz.run;
 
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +14,7 @@ import java.util.Optional;
 @RequestMapping("/api/runs")
 public class RunController {
 
+    private Logger logger = LoggerFactory.getLogger(RunController.class);
     RunRepository runRepository;
 
     @Autowired
@@ -38,7 +40,6 @@ public class RunController {
     @PostMapping("/createRun")
     void create(@Valid @RequestBody Run run) {
         runRepository.create(run);
-
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

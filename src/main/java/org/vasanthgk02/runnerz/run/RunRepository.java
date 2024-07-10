@@ -1,12 +1,7 @@
-package org.vasanthgk02.freecodecamp_springboot.run;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+package org.vasanthgk02.runnerz.run;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Objects;
 import java.util.Optional;
 
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -42,8 +37,17 @@ public class RunRepository {
     }
 
     void update(Run run) {
+        Optional<Run> existingRecord = this.findById(run.id());
+        if(!existingRecord.isPresent()) return;
+        logger.info(existingRecord.toString());
+        logger.info(run.toString());
         jdbclient.sql("UPDATE Run SET title = ?, started_on = ?, ended_on = ?, miles = ?, location = ? WHERE id = ?")
-                .params(List.of(run.title(), run.startedOn(), run.endedOn(), run.miles(), run.location().toString(), run.id()))
+                .params(List.of(
+                        run.title() == null ? existingRecord.get().title() : run.title(),
+                        run.startedOn() == null ? existingRecord.get().startedOn() : run.startedOn(),
+                        run.endedOn() == null ? existingRecord.get().endedOn() : run.endedOn(),
+                        run.miles() == null ? existingRecord.get().miles() : run.miles(),
+                        run.location() == null ? existingRecord.get().location().toString() : run.location().toString(), run.id()))
                 .update();
     }
 
@@ -58,7 +62,7 @@ public class RunRepository {
     }
 
     void saveAll(List<Run> runs) {
-        runs.stream().forEach(this::create);
+        runs.forEach(this::create);
     }
 
     List<Run> findByLocation(String location) {

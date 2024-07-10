@@ -1,13 +1,15 @@
-package org.vasanthgk02.freecodecamp_springboot.run;
-
+package org.vasanthgk02.runnerz.run;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ClassPathResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.asm.TypeReference;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -18,6 +20,8 @@ public class RunJsonDataLoader implements CommandLineRunner {
     RunRepository runRepository;
     ObjectMapper objectMapper;
 
+
+    @Autowired
     public RunJsonDataLoader(RunRepository runRepository, ObjectMapper objectMapper) {
         this.runRepository = runRepository;
         this.objectMapper = objectMapper;
@@ -26,8 +30,19 @@ public class RunJsonDataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         if(runRepository.count() == 0) {
-            Run run = new Run(1, "Vasanth", LocalDateTime.now(), LocalDateTime.now().plus(1, ChronoUnit.HOURS),10, Location.OUTDOOR);
-            runRepository.create(run);
+            String filePath = "data/runs.json";
+            Resource resource = new ClassPathResource(filePath);
+            if (!resource.exists()) {
+                throw new RuntimeException("Resource not found: " + filePath);
+            }
+            else log.info("File is present: " + filePath);
+            try(InputStream in = resource.getInputStream()) {
+                Runs allRuns = objectMapper.readValue(in, Runs.class);
+                runRepository.saveAll(allRuns.runs());
+            }
+//            catch(Exception e) {
+////                throw new RuntimeException("Failed to load runs.json", e);
+//            }
         }
         else {
             log.info("Not bootstrapping the data");

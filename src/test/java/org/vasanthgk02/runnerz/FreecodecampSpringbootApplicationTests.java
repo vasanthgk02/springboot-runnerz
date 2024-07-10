@@ -1,4 +1,4 @@
-package org.vasanthgk02.freecodecamp_springboot;
+package org.vasanthgk02.runnerz;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
